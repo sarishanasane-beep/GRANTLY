@@ -39,6 +39,18 @@ const ProfilePage = React.lazy(() =>
 const OnboardingPage = React.lazy(() =>
   import('@/pages/OnboardingPage').then((m) => ({ default: m.OnboardingPage }))
 );
+const PrivacyPolicyPage = React.lazy(() =>
+  import('@/pages/PrivacyPolicyPage').then((m) => ({ default: m.PrivacyPolicyPage }))
+);
+const TermsPage = React.lazy(() =>
+  import('@/pages/TermsPage').then((m) => ({ default: m.TermsPage }))
+);
+const CookiePolicyPage = React.lazy(() =>
+  import('@/pages/CookiePolicyPage').then((m) => ({ default: m.CookiePolicyPage }))
+);
+const RefundPolicyPage = React.lazy(() =>
+  import('@/pages/RefundPolicyPage').then((m) => ({ default: m.RefundPolicyPage }))
+);
 const NotFoundPage = React.lazy(() =>
   import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage }))
 );
@@ -103,9 +115,13 @@ export const App: React.FC = () => {
 
       <Suspense fallback={<PageFallback />}>
         <Routes>
-          {/* Marketing Route with dedicated landing layout */}
+          {/* Marketing & Legal Routes with dedicated layout */}
           <Route element={<MarketingLayout />}>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/cookies" element={<CookiePolicyPage />} />
+            <Route path="/refund" element={<RefundPolicyPage />} />
           </Route>
 
           {/* Internal Application Routes with shared responsive layout */}

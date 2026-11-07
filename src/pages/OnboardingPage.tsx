@@ -662,6 +662,20 @@ export const OnboardingPage: React.FC = () => {
                 Person with Benchmark Disability (PwD 40%+)
               </label>
             </div>
+
+            {/* Student Privacy & Consent Disclosure */}
+            <div className="p-3.5 rounded-lg border border-border/80 bg-surface-muted/40 text-[11px] text-muted space-y-1 mt-4">
+              <div className="flex items-center gap-1.5 text-text font-semibold">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Client-Side Data Minimization</span>
+              </div>
+              <p className="leading-relaxed">
+                By calculating matches, your academic and demographic profile is stored exclusively in your browser's local storage to compute instant match rankings. No profile information is transmitted to external servers. You can erase this data at any time from your{' '}
+                <Link to="/profile" className="text-primary underline hover:text-text">Profile</Link>. Review our{' '}
+                <Link to="/privacy" className="text-primary underline hover:text-text">Privacy Policy</Link> and{' '}
+                <Link to="/terms" className="text-primary underline hover:text-text">Terms of Service</Link>.
+              </p>
+            </div>
           </div>
         )}
 

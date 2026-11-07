@@ -6,11 +6,14 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { CheckCircle2, RotateCcw, AlertCircle } from 'lucide-react';
+import { Modal } from '@/components/ui/Modal';
+import { CheckCircle2, RotateCcw, AlertCircle, Trash2, ShieldAlert, Info } from 'lucide-react';
 
 export const ProfilePage: React.FC = () => {
-  const { profile, setProfile, resetProfile } = useAppStore();
+  const { profile, setProfile, resetProfile, clearAllLocalData } = useAppStore();
   const [isSavedNotice, setIsSavedNotice] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteSuccessNotice, setDeleteSuccessNotice] = useState(false);
 
   const completeness = useMemo(() => calculateProfileCompleteness(profile), [profile]);
 
@@ -18,6 +21,13 @@ export const ProfilePage: React.FC = () => {
     e.preventDefault();
     setIsSavedNotice(true);
     setTimeout(() => setIsSavedNotice(false), 3000);
+  };
+
+  const handleConfirmDelete = () => {
+    clearAllLocalData();
+    setIsDeleteModalOpen(false);
+    setDeleteSuccessNotice(true);
+    setTimeout(() => setDeleteSuccessNotice(false), 5000);
   };
 
   const indianStates = [
@@ -97,11 +107,29 @@ export const ProfilePage: React.FC = () => {
       </div>
 
       {isSavedNotice && (
-        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2 text-xs text-emerald-400 animate-in fade-in">
+        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2 text-xs text-emerald-400 animate-in fade-in" role="status">
           <CheckCircle2 className="w-4 h-4" />
           <span>Profile changes saved and applied immediately to the matching engine.</span>
         </div>
       )}
+
+      {deleteSuccessNotice && (
+        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-xs text-red-400 animate-in fade-in" role="alert">
+          <CheckCircle2 className="w-4 h-4" />
+          <span>All local GRANTLY profile and application tracking data has been permanently cleared from your browser storage.</span>
+        </div>
+      )}
+
+      {/* Minor Student Advisory */}
+      <div className="p-4 rounded-xl bg-[#1F2A1F]/60 border border-[#3E5A3F]/40 flex items-start gap-3 text-xs text-[#8CA98C]">
+        <Info className="w-4 h-4 text-[#D9C7A3] mt-0.5 shrink-0" />
+        <div className="space-y-1">
+          <span className="font-semibold text-[#D9C7A3]">Student Privacy & Data Minimization:</span>
+          <p>
+            GRANTLY stores your profile criteria exclusively in your local browser storage. No personal data is transmitted to an external database. If you are under 18 years old, please consult a parent or guardian. Never share sensitive government ID numbers or passwords.
+          </p>
+        </div>
+      </div>
 
       {/* Completeness Card */}
       <Card className="p-5 border-border bg-surface">
@@ -327,6 +355,82 @@ export const ProfilePage: React.FC = () => {
           </Button>
         </div>
       </form>
+
+      {/* Local Storage Privacy & Data Erasure Section */}
+      <Card className="p-6 border-red-950/40 bg-red-950/10 space-y-4">
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 shrink-0">
+            <Trash2 className="w-4 h-4" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-sm font-semibold text-text">
+              Local Browser Data Deletion
+            </h3>
+            <p className="text-xs text-muted leading-relaxed">
+              GRANTLY stores your profile attributes, saved scholarships, document readiness statuses, and tracking steps in your browser&apos;s <code className="text-[#D9C7A3] font-mono">localStorage</code>. You can permanently wipe this data from this device at any time.
+            </p>
+          </div>
+        </div>
+
+        <div className="pt-2 flex justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsDeleteModalOpen(true)}
+            leftIcon={<Trash2 className="w-3.5 h-3.5 text-red-400" />}
+            className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50"
+          >
+            Delete My Local Data
+          </Button>
+        </div>
+      </Card>
+
+      {/* Confirmation Modal for Local Data Deletion */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Permanently Delete Local Data?"
+        description="This operation cannot be undone."
+      >
+        <div className="space-y-4">
+          <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/25 flex items-start gap-2.5 text-xs text-red-300">
+            <ShieldAlert className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <span className="font-semibold text-red-200">What will be removed:</span>
+              <ul className="list-disc list-inside space-y-0.5 text-red-300/90">
+                <li>Your student academic and financial profile criteria</li>
+                <li>All 36 match calculations and saved opportunities</li>
+                <li>Application checklist progress and uploaded document notes</li>
+                <li>Local custom settings and notifications</li>
+              </ul>
+            </div>
+          </div>
+
+          <p className="text-xs text-muted">
+            Because GRANTLY is a client-side platform, your data resides exclusively in your browser&apos;s storage (<code className="text-[#D9C7A3] font-mono">localStorage</code>). No data is held by an external server.
+          </p>
+
+          <div className="flex justify-end gap-3 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsDeleteModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleConfirmDelete}
+              className="bg-red-600 hover:bg-red-700 text-white font-medium"
+            >
+              Confirm &amp; Erase All Data
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

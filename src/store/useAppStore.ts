@@ -168,9 +168,10 @@ export interface AppState {
   markAllNotificationsAsRead: () => void;
   addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void;
 
-  // 8. Hydration tracking
+  // 8. Hydration & Local Data Management
   isHydrated: boolean;
   setHydrated: (state: boolean) => void;
+  clearAllLocalData: () => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -436,9 +437,44 @@ export const useAppStore = create<AppState>()(
           ],
         })),
 
-      // Hydration
+      // Hydration & Privacy Data Erasure
       isHydrated: false,
       setHydrated: (state) => set({ isHydrated: state }),
+      clearAllLocalData: () => {
+        try {
+          if (typeof window !== 'undefined' && window.localStorage) {
+            // Delete only GRANTLY-namespaced keys to avoid erasing unrelated site data
+            const keysToRemove: string[] = [];
+            for (let i = 0; i < window.localStorage.length; i++) {
+              const k = window.localStorage.key(i);
+              if (k && (k.startsWith('grantly-') || k.startsWith('grantly_'))) {
+                keysToRemove.push(k);
+              }
+            }
+            keysToRemove.forEach((k) => window.localStorage.removeItem(k));
+          }
+        } catch (e) {
+          console.error('Failed to clear local storage keys:', e);
+        }
+
+        // Reset memory state to initial blank/default demo
+        set({
+          profile: {
+            ...INITIAL_STUDENT_PROFILE,
+            fullName: '',
+            email: '',
+            phone: '',
+            avatarUrl: '',
+            completedOnboarding: false,
+          },
+          savedScholarshipIds: [],
+          applications: {},
+          vaultDocuments: DEFAULT_MOCK_VAULT_DOCUMENTS.map((d) => ({ ...d, hasDocument: false })),
+          compareList: [],
+          notifications: [],
+          settings: INITIAL_SETTINGS,
+        });
+      },
     }),
     {
       name: 'grantly-platform-v1',

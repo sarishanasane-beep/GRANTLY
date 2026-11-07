@@ -5,6 +5,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { Button } from '@/components/ui/Button';
 import { AssembleIntro } from '@/components/intro/AssembleIntro';
 import { ScrollModelCanvas } from '@/three/models/ScrollModelCanvas';
+import { useSEO } from '@/hooks/useSEO';
 import {
   ArrowRight,
   ShieldCheck,
@@ -26,6 +27,11 @@ export const LandingPage: React.FC = () => {
     stiffness: 90,
     damping: 30,
     restDelta: 0.001,
+  });
+
+  useSEO({
+    title: 'GRANTLY — Intelligence Layer for Student Scholarships',
+    description: 'Autonomous multi-factor matching, document readiness audits, deadline tracking, and unified eligibility for higher education grants.',
   });
 
   return (

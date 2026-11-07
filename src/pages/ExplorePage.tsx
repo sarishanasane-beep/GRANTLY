@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { useSEO } from '@/hooks/useSEO';
 import {
   Search,
   Bookmark,
@@ -36,6 +37,11 @@ export const ExplorePage: React.FC = () => {
   const [selectedAmountRange, setSelectedAmountRange] = useState<string>('all');
   const [selectedUrgency, setSelectedUrgency] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'match' | 'amount' | 'deadline'>('match');
+
+  useSEO({
+    title: 'Explore Scholarships — GRANTLY',
+    description: 'Filter, search, and discover 36 mock opportunities across merit, means, STEM, and minority grant categories.',
+  });
 
   // Pre-evaluate all scholarships immutably for accurate counts
   const batchEvaluation = useMemo(() => {

@@ -1,9 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
+import { useSEO } from '@/hooks/useSEO';
 import { Sparkles, ArrowLeft, Compass } from 'lucide-react';
 
 export const NotFoundPage: React.FC = () => {
+  useSEO({
+    title: '404 Page Not Found — GRANTLY',
+    description: 'The requested opportunity route does not exist in the GRANTLY application.',
+  });
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-4 space-y-6">
       <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-primary shadow-glow-emerald">

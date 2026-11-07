@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { MOCK_SCHOLARSHIPS } from '@/data/scholarships';
 import { useAppStore } from '@/store/useAppStore';
 import { calculateScholarshipMatch } from '@/lib/matchingEngine';
+import { useSEO } from '@/hooks/useSEO';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -16,14 +17,62 @@ import {
   Clock,
   Sparkles,
   ShieldCheck,
+  Share2,
+  Check,
+  Printer,
 } from 'lucide-react';
 
 export const ScholarshipDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { profile, savedScholarshipIds, toggleSaveScholarship, addToCompare, isInCompare, startApplication, applications } = useAppStore();
+  const [copied, setCopied] = useState(false);
 
   const scholarship = MOCK_SCHOLARSHIPS.find((s) => s.id === id);
+
+  useSEO({
+    title: scholarship ? `${scholarship.title} — GRANTLY` : 'Scholarship Details — GRANTLY',
+    description: scholarship
+      ? `${scholarship.title} offers ${scholarship.amountFormatted} in grant funding. Review criteria, eligibility, and deadlines.`
+      : 'Review scholarship requirements and eligibility matching on GRANTLY.',
+  });
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      const textarea = document.createElement('textarea');
+      textarea.value = window.location.href;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleShare = async () => {
+    if (navigator.share && scholarship) {
+      try {
+        await navigator.share({
+          title: scholarship.title,
+          text: `Check out ${scholarship.title} on GRANTLY:`,
+          url: window.location.href,
+        });
+        return;
+      } catch {
+        // Fall back to copy link
+      }
+    }
+    handleCopyLink();
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   if (!scholarship) {
     return (
@@ -52,12 +101,36 @@ export const ScholarshipDetailPage: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Back button & action bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
         <Link to="/explore" className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-text font-medium">
           <ArrowLeft className="w-4 h-4" /> Back to all schemes
         </Link>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Share & Copy Link */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleShare}
+            leftIcon={copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
+            title="Share or copy scholarship link"
+            aria-label="Share or copy scholarship link"
+          >
+            {copied ? 'Link Copied!' : 'Share'}
+          </Button>
+
+          {/* Print Action */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePrint}
+            leftIcon={<Printer className="w-4 h-4" />}
+            title="Print or save as PDF"
+            aria-label="Print or save as PDF"
+          >
+            Print
+          </Button>
+
           <Button
             variant={isSaved ? 'secondary' : 'outline'}
             size="sm"

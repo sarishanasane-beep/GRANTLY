@@ -203,9 +203,31 @@ export const AppLayout: React.FC = () => {
       </header>
 
       {/* Main Internal Content Area */}
-      <main id="main-content" className="flex-1 pb-20 md:pb-8">
+      <main id="main-content" className="flex-1 pb-12">
         <Outlet />
       </main>
+
+      {/* App Workspace Footer */}
+      <footer
+        className="w-full border-t border-border/70 bg-surface/50 backdrop-blur-sm py-6 px-4 sm:px-6 lg:px-8 pb-24 md:pb-6 text-xs text-muted"
+        role="contentinfo"
+      >
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-center sm:text-left">
+            <span className="font-semibold text-text tracking-tight">GRANTLY</span>
+            <span className="hidden sm:inline text-border">•</span>
+            <span className="text-[11px]">Client-side prototype. All 36 catalog entries are fictional demonstrations.</span>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-4 text-[11px]">
+            <Link to="/privacy" className="hover:text-text transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-text transition-colors">Terms of Service</Link>
+            <Link to="/cookies" className="hover:text-text transition-colors">Storage & Cookies</Link>
+            <Link to="/refund" className="hover:text-text transition-colors">Demo Disclosure</Link>
+            <span className="text-muted/60">© {new Date().getFullYear()}</span>
+          </div>
+        </div>
+      </footer>
 
       {/* Mobile Bottom Navigation Bar (Hidden on desktop) */}
       <nav
