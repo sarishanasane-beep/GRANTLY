@@ -257,8 +257,67 @@ export const ScholarshipDetailPage: React.FC = () => {
                 <span className="font-semibold text-text">
                   {scholarship.criteria.maxAnnualFamilyIncome
                     ? `Under ₹${scholarship.criteria.maxAnnualFamilyIncome.toLocaleString('en-IN')}`
-                    : 'No Income Cap'}
+                    : 'No Income Cap / Open'}
                 </span>
+              </div>
+              <div className="p-3 rounded-lg bg-surface-elevated border border-border">
+                <span className="text-muted block">Minimum Academic Cutoff</span>
+                <span className="font-semibold text-text">
+                  {scholarship.criteria.percentageMin
+                    ? `${scholarship.criteria.percentageMin}% Marks or ${scholarship.criteria.cgpaMin || (scholarship.criteria.percentageMin / 9.5).toFixed(1)} CGPA`
+                    : 'No Minimum Cutoff Threshold'}
+                </span>
+              </div>
+              <div className="p-3 rounded-lg bg-surface-elevated border border-border">
+                <span className="text-muted block">Applicable Communities / Categories</span>
+                <span className="font-semibold text-text">{scholarship.criteria.categories.join(', ')}</span>
+              </div>
+            </div>
+
+            {scholarship.criteria.specialConditions && scholarship.criteria.specialConditions.length > 0 && (
+              <div className="pt-2">
+                <span className="text-xs font-semibold text-muted block mb-1.5">Special Eligibility Conditions:</span>
+                <ul className="list-disc pl-4 space-y-1 text-xs text-text">
+                  {scholarship.criteria.specialConditions.map((cond, idx) => (
+                    <li key={idx}>{cond}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </Card>
+
+          {/* Application Walkthrough & Effort Instructions */}
+          <Card className="p-6 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-border">
+              <h2 className="text-lg font-display font-bold text-text">Application Stages & Instructions</h2>
+              <div className="flex items-center gap-2">
+                <Badge variant="neutral" size="sm">{scholarship.effortLevel} Effort</Badge>
+                <Badge variant="gold" size="sm">Est. {scholarship.estimatedTimeMinutes} mins</Badge>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+              <div className="p-3 rounded-lg bg-surface-elevated/60 border border-border space-y-1">
+                <span className="text-primary font-bold block text-[11px]">STAGE 01</span>
+                <p className="font-semibold text-text">Document Readiness</p>
+                <p className="text-muted text-[11px]">Verify required certificates in your Vault.</p>
+              </div>
+              <div className="p-3 rounded-lg bg-surface-elevated/60 border border-border space-y-1">
+                <span className="text-primary font-bold block text-[11px]">STAGE 02</span>
+                <p className="font-semibold text-text">Statement Drafting</p>
+                <p className="text-muted text-[11px]">
+                  {scholarship.hasEssayRequirement ? 'Draft essay in the Tracker workspace.' : 'No essay required for this scheme.'}
+                </p>
+              </div>
+              <div className="p-3 rounded-lg bg-surface-elevated/60 border border-border space-y-1">
+                <span className="text-primary font-bold block text-[11px]">STAGE 03</span>
+                <p className="font-semibold text-text">Institution Endorsement</p>
+                <p className="text-muted text-[11px]">Obtain bonafide or Dean digital seal.</p>
+              </div>
+              <div className="p-3 rounded-lg bg-surface-elevated/60 border border-border space-y-1">
+                <span className="text-primary font-bold block text-[11px]">STAGE 04</span>
+                <p className="font-semibold text-text">Portal Filing</p>
+                <p className="text-muted text-[11px]">Submit to provider portal before deadline.</p>
               </div>
             </div>
           </Card>
@@ -311,6 +370,48 @@ export const ScholarshipDetailPage: React.FC = () => {
 
         {/* Right Column: Match Breakdown & Quick Actions */}
         <div className="lg:col-span-4 space-y-6">
+          {/* Personalized Eligibility Explanation Card */}
+          <Card className={`p-5 space-y-3 border ${
+            match.eligibilityStatus === 'eligible'
+              ? 'border-emerald-500/30 bg-emerald-500/5'
+              : match.eligibilityStatus === 'potentially_eligible'
+              ? 'border-gold-500/30 bg-gold-500/5'
+              : 'border-border bg-surface'
+          }`}>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted">
+                Eligibility Verdict
+              </span>
+              <Badge
+                variant={
+                  match.eligibilityStatus === 'eligible'
+                    ? 'success'
+                    : match.eligibilityStatus === 'potentially_eligible'
+                    ? 'gold'
+                    : 'neutral'
+                }
+                size="sm"
+              >
+                {match.eligibilityStatus === 'eligible'
+                  ? 'Verified Eligible'
+                  : match.eligibilityStatus === 'potentially_eligible'
+                  ? 'Potentially Eligible'
+                  : 'Not Eligible'}
+              </Badge>
+            </div>
+            <p className="text-xs text-text leading-relaxed font-medium">
+              {match.explanation ||
+                (match.eligibilityStatus === 'eligible'
+                  ? 'You satisfy all mandatory academic, income, and domicile thresholds for this scheme.'
+                  : match.eligibilityStatus === 'potentially_eligible'
+                  ? 'This opportunity has open criteria or your profile is missing optional verification fields.'
+                  : 'Your profile does not satisfy one or more mandatory thresholds for this scheme.')}
+            </p>
+            <p className="text-[11px] text-muted italic border-t border-border/50 pt-2">
+              Note: Algorithmic match scores indicate criteria alignment and do not guarantee funding.
+            </p>
+          </Card>
+
           <Card className="p-6 space-y-4">
             <h3 className="font-display font-bold text-base text-text">Compatibility Analysis</h3>
             

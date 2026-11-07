@@ -36,6 +36,8 @@ export const ExplorePage: React.FC = () => {
   const [selectedLevel, setSelectedLevel] = useState<string>('All');
   const [selectedAmountRange, setSelectedAmountRange] = useState<string>('all');
   const [selectedUrgency, setSelectedUrgency] = useState<string>('all');
+  const [selectedState, setSelectedState] = useState<string>('All');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [sortBy, setSortBy] = useState<'match' | 'amount' | 'deadline'>('match');
 
   useSEO({
@@ -53,6 +55,20 @@ export const ExplorePage: React.FC = () => {
     const fields = new Set<string>();
     MOCK_SCHOLARSHIPS.forEach((s) => s.criteria.academicFields.forEach((f) => fields.add(f)));
     return ['All', ...Array.from(fields)];
+  }, []);
+
+  // Derive unique states from catalog
+  const availableStates = useMemo(() => {
+    const states = new Set<string>();
+    MOCK_SCHOLARSHIPS.forEach((s) => s.criteria.states.forEach((st) => states.add(st)));
+    return ['All', ...Array.from(states).sort()];
+  }, []);
+
+  // Derive unique social categories from catalog
+  const availableCategories = useMemo(() => {
+    const categories = new Set<string>();
+    MOCK_SCHOLARSHIPS.forEach((s) => s.criteria.categories.forEach((cat) => categories.add(cat)));
+    return ['All', ...Array.from(categories).sort()];
   }, []);
 
   const educationLevels = [
@@ -95,6 +111,17 @@ export const ExplorePage: React.FC = () => {
           selectedLevel === 'All' ||
           scholarship.criteria.educationLevels.includes(selectedLevel as any);
 
+        // State filter
+        const matchesState =
+          selectedState === 'All' ||
+          scholarship.criteria.states.includes('All India') ||
+          scholarship.criteria.states.includes(selectedState);
+
+        // Applicable Category filter
+        const matchesCategory =
+          selectedCategory === 'All' ||
+          scholarship.criteria.categories.includes(selectedCategory as any);
+
         // Award amount range filter
         let matchesAmount = true;
         if (selectedAmountRange === 'under50k') {
@@ -120,6 +147,8 @@ export const ExplorePage: React.FC = () => {
           matchesEligibility &&
           matchesField &&
           matchesLevel &&
+          matchesState &&
+          matchesCategory &&
           matchesAmount &&
           matchesUrgency
         );
@@ -150,6 +179,8 @@ export const ExplorePage: React.FC = () => {
     selectedEligibility,
     selectedField,
     selectedLevel,
+    selectedState,
+    selectedCategory,
     selectedAmountRange,
     selectedUrgency,
     sortBy,
@@ -161,6 +192,8 @@ export const ExplorePage: React.FC = () => {
     setSelectedEligibility('all');
     setSelectedField('All');
     setSelectedLevel('All');
+    setSelectedState('All');
+    setSelectedCategory('All');
     setSelectedAmountRange('all');
     setSelectedUrgency('all');
     setSortBy('match');
@@ -171,6 +204,8 @@ export const ExplorePage: React.FC = () => {
     selectedEligibility !== 'all' ||
     selectedField !== 'All' ||
     selectedLevel !== 'All' ||
+    selectedState !== 'All' ||
+    selectedCategory !== 'All' ||
     selectedAmountRange !== 'all' ||
     selectedUrgency !== 'all';
 
@@ -348,6 +383,56 @@ export const ExplorePage: React.FC = () => {
               <option value="30days">Next 30 days</option>
               <option value="future">Beyond 30 days</option>
             </select>
+          </div>
+        </div>
+
+        {/* Second Filter Row: State Domicile & Affirmative Category */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-3 pt-2 border-t border-border/40">
+          {/* State / Domicile Filter */}
+          <div className="md:col-span-4">
+            <select
+              value={selectedState}
+              onChange={(e) => setSelectedState(e.target.value)}
+              className="w-full h-10 rounded-lg border border-border bg-surface px-3 py-2 text-xs text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              aria-label="Filter by State or Region"
+            >
+              {availableStates.map((st) => (
+                <option key={st} value={st}>
+                  {st === 'All' ? 'State / Region: All India & All States' : `State: ${st}`}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Social / Affirmative Category Filter */}
+          <div className="md:col-span-4">
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full h-10 rounded-lg border border-border bg-surface px-3 py-2 text-xs text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              aria-label="Filter by Applicable Category"
+            >
+              {availableCategories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat === 'All' ? 'Category: All Eligible Communities' : `Category: ${cat}`}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Active Filters Clear Badge */}
+          <div className="md:col-span-4 flex items-center justify-end gap-2">
+            {hasActiveFilters && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleResetFilters}
+                leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
+                className="text-xs"
+              >
+                Clear All Applied Filters
+              </Button>
+            )}
           </div>
         </div>
 
@@ -543,12 +628,27 @@ export const ExplorePage: React.FC = () => {
 
       {/* Empty State */}
       {filteredScholarships.length === 0 && (
-        <div className="text-center py-16 bg-surface rounded-xl border border-border p-8 space-y-4">
-          <p className="text-muted text-base">No scholarships match the selected filter combination.</p>
-          <Button variant="outline" size="sm" onClick={handleResetFilters}>
-            Clear All Filters
-          </Button>
-        </div>
+        <Card className="text-center py-16 bg-surface rounded-2xl border border-border/80 p-8 space-y-4 max-w-xl mx-auto shadow-sm">
+          <div className="w-12 h-12 rounded-xl bg-surface-elevated flex items-center justify-center text-muted mx-auto border border-border">
+            <Search className="w-6 h-6" />
+          </div>
+          <div className="space-y-1.5">
+            <h2 className="text-lg font-bold font-display text-text">No Matching Schemes Found</h2>
+            <p className="text-xs text-muted max-w-md mx-auto leading-relaxed">
+              We couldn't find any opportunities matching this combination of criteria. Try loosening your state, academic discipline, or category filters.
+            </p>
+          </div>
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <Button variant="primary" size="sm" onClick={handleResetFilters} leftIcon={<RotateCcw className="w-4 h-4" />}>
+              Reset All Filters
+            </Button>
+            <Link to="/onboarding">
+              <Button variant="outline" size="sm">
+                Recalculate Profile
+              </Button>
+            </Link>
+          </div>
+        </Card>
       )}
     </div>
   );

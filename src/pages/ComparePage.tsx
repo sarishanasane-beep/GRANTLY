@@ -79,16 +79,30 @@ export const ComparePage: React.FC = () => {
               ))}
             </div>
 
-            {/* Match Compatibility */}
+            {/* Match Compatibility & Verdict */}
             <div className="grid grid-cols-4 p-4 text-xs items-center">
-              <div className="col-span-1 font-semibold text-muted">Compatibility Match</div>
+              <div className="col-span-1 font-semibold text-muted">Eligibility Verdict</div>
               {selectedScholarships.map((s) => {
                 const match = calculateScholarshipMatch(s, profile);
                 return (
-                  <div key={s.id} className="col-span-1 px-2">
-                    <Badge variant={match.matchScore >= 80 ? 'success' : 'gold'} size="sm">
-                      {match.matchScore}% Match
+                  <div key={s.id} className="col-span-1 px-2 space-y-1">
+                    <Badge
+                      variant={
+                        match.eligibilityStatus === 'eligible'
+                          ? 'success'
+                          : match.eligibilityStatus === 'potentially_eligible'
+                          ? 'gold'
+                          : 'neutral'
+                      }
+                      size="sm"
+                    >
+                      {match.eligibilityStatus === 'eligible'
+                        ? 'Verified Eligible'
+                        : match.eligibilityStatus === 'potentially_eligible'
+                        ? 'Potentially Eligible'
+                        : 'Not Eligible'}
                     </Badge>
+                    <p className="text-[10px] text-muted">{match.matchScore}% Match Score</p>
                   </div>
                 );
               })}
@@ -98,8 +112,9 @@ export const ComparePage: React.FC = () => {
             <div className="grid grid-cols-4 p-4 text-xs items-center">
               <div className="col-span-1 font-semibold text-muted">Grant Amount</div>
               {selectedScholarships.map((s) => (
-                <div key={s.id} className="col-span-1 px-2 font-display font-bold text-sm text-primary">
-                  {s.amountFormatted}
+                <div key={s.id} className="col-span-1 px-2">
+                  <span className="font-display font-bold text-sm text-primary block">{s.amountFormatted}</span>
+                  <span className="text-[10px] text-muted">{s.awardPeriod}</span>
                 </div>
               ))}
             </div>
@@ -120,7 +135,8 @@ export const ComparePage: React.FC = () => {
               <div className="col-span-1 font-semibold text-muted">Deadline</div>
               {selectedScholarships.map((s) => (
                 <div key={s.id} className="col-span-1 px-2 font-medium text-gold-400">
-                  {s.deadlineDays} days remaining
+                  <span className="block">{s.deadlineDays} days remaining</span>
+                  <span className="text-[10px] text-muted font-mono">{new Date(s.deadlineDate).toLocaleDateString()}</span>
                 </div>
               ))}
             </div>
@@ -129,8 +145,20 @@ export const ComparePage: React.FC = () => {
             <div className="grid grid-cols-4 p-4 text-xs items-center">
               <div className="col-span-1 font-semibold text-muted">Education Level</div>
               {selectedScholarships.map((s) => (
-                <div key={s.id} className="col-span-1 px-2 text-text">
+                <div key={s.id} className="col-span-1 px-2 text-text font-medium">
                   {s.criteria.educationLevels.join(', ')}
+                </div>
+              ))}
+            </div>
+
+            {/* Academic Cutoff Threshold */}
+            <div className="grid grid-cols-4 p-4 text-xs items-center">
+              <div className="col-span-1 font-semibold text-muted">Academic Cutoff</div>
+              {selectedScholarships.map((s) => (
+                <div key={s.id} className="col-span-1 px-2 text-text">
+                  {s.criteria.percentageMin
+                    ? `${s.criteria.percentageMin}% Marks / ${s.criteria.cgpaMin || 7.0} CGPA`
+                    : 'No minimum cutoff required'}
                 </div>
               ))}
             </div>
@@ -141,6 +169,26 @@ export const ComparePage: React.FC = () => {
               {selectedScholarships.map((s) => (
                 <div key={s.id} className="col-span-1 px-2 text-text">
                   {s.criteria.academicFields.slice(0, 2).join(', ')}
+                </div>
+              ))}
+            </div>
+
+            {/* Geographic Scope / States */}
+            <div className="grid grid-cols-4 p-4 text-xs items-center">
+              <div className="col-span-1 font-semibold text-muted">Applicable States</div>
+              {selectedScholarships.map((s) => (
+                <div key={s.id} className="col-span-1 px-2 text-text">
+                  {s.criteria.states.join(', ')}
+                </div>
+              ))}
+            </div>
+
+            {/* Eligible Categories */}
+            <div className="grid grid-cols-4 p-4 text-xs items-center">
+              <div className="col-span-1 font-semibold text-muted">Target Communities</div>
+              {selectedScholarships.map((s) => (
+                <div key={s.id} className="col-span-1 px-2 text-text">
+                  {s.criteria.categories.join(', ')}
                 </div>
               ))}
             </div>
@@ -163,18 +211,24 @@ export const ComparePage: React.FC = () => {
               {selectedScholarships.map((s) => (
                 <div key={s.id} className="col-span-1 px-2">
                   <Badge variant={s.hasEssayRequirement ? 'gold' : 'neutral'} size="sm">
-                    {s.hasEssayRequirement ? 'Required' : 'No Essay'}
+                    {s.hasEssayRequirement ? `Required (${s.essayWordLimit || 500}w)` : 'No Essay'}
                   </Badge>
                 </div>
               ))}
             </div>
 
-            {/* Documentation Effort */}
+            {/* Documentation Effort & Required Documents */}
             <div className="grid grid-cols-4 p-4 text-xs items-center">
-              <div className="col-span-1 font-semibold text-muted">Effort Rating</div>
+              <div className="col-span-1 font-semibold text-muted">Required Documents</div>
               {selectedScholarships.map((s) => (
-                <div key={s.id} className="col-span-1 px-2 font-semibold text-text">
-                  {s.effortLevel} ({s.requiredDocuments.length} docs)
+                <div key={s.id} className="col-span-1 px-2 space-y-1">
+                  <span className="font-semibold text-text block">
+                    {s.effortLevel} Effort ({s.requiredDocuments.length} docs)
+                  </span>
+                  <p className="text-[10px] text-muted">
+                    {s.requiredDocuments.map((d) => d.name).slice(0, 2).join(', ')}
+                    {s.requiredDocuments.length > 2 ? ` +${s.requiredDocuments.length - 2} more` : ''}
+                  </p>
                 </div>
               ))}
             </div>

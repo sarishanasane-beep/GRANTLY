@@ -50,6 +50,95 @@ export const DashboardPage: React.FC = () => {
   // Urgent matches in top recommendations
   const urgentMatches = topMatches.filter(({ scholarship }) => scholarship.deadlineDays <= 14);
 
+  const inProgressApps = useMemo(() => {
+    return Object.values(applications).filter(
+      (a) => a.status === 'drafting' || a.status === 'ready_to_apply' || a.status === 'saved'
+    );
+  }, [applications]);
+
+  const submittedApps = useMemo(() => {
+    return Object.values(applications).filter(
+      (a) => a.status === 'submitted' || a.status === 'under_review' || a.status === 'approved' || a.status === 'awarded'
+    );
+  }, [applications]);
+
+  const savedList = useMemo(() => {
+    return MOCK_SCHOLARSHIPS.filter((s) => savedScholarshipIds.includes(s.id));
+  }, [savedScholarshipIds]);
+
+  const expiringDocs = useMemo(() => {
+    return vaultDocuments.filter((d) => {
+      if (!d.expiryDate || d.expiryDate === 'Permanent Record' || d.expiryDate === 'Active Account') return false;
+      const t = Date.parse(d.expiryDate);
+      if (isNaN(t)) return false;
+      return (t - Date.now()) / (1000 * 60 * 60 * 24) <= 60;
+    });
+  }, [vaultDocuments]);
+
+  // Dynamic Personalized Next Actions (answers "What should I do next?")
+  const nextActions = useMemo(() => {
+    const actions: { id: string; title: string; subtitle: string; link: string; linkText: string; priority: 'high' | 'medium' | 'normal' }[] = [];
+
+    if (!completeness.isComplete) {
+      actions.push({
+        id: 'profile',
+        title: 'Complete Missing Profile Fields',
+        subtitle: `Add ${completeness.missingFields.slice(0, 2).join(', ')} to verify 100% eligibility.`,
+        link: '/profile',
+        linkText: 'Update Profile',
+        priority: 'high',
+      });
+    }
+
+    const firstActiveApp = inProgressApps[0];
+    if (firstActiveApp) {
+      const nextStep = firstActiveApp.steps.find((s) => !s.isCompleted);
+      actions.push({
+        id: `app-${firstActiveApp.scholarshipId}`,
+        title: `Resume Application: ${firstActiveApp.scholarshipTitle}`,
+        subtitle: nextStep ? `Next step: ${nextStep.title}` : 'All steps complete. Ready to submit!',
+        link: '/tracker',
+        linkText: 'Open Tracker',
+        priority: 'high',
+      });
+    }
+
+    if (expiringDocs.length > 0) {
+      actions.push({
+        id: 'vault-expiry',
+        title: `${expiringDocs.length} Credential(s) Expiring Soon in Vault`,
+        subtitle: `Review ${expiringDocs[0].name} to ensure valid proof before applying.`,
+        link: '/vault',
+        linkText: 'Review Vault',
+        priority: 'medium',
+      });
+    }
+
+    if (urgentMatches.length > 0) {
+      actions.push({
+        id: 'urgent-deadlines',
+        title: `${urgentMatches.length} High-Match Opportunity Closing Within 14 Days`,
+        subtitle: `${urgentMatches[0].scholarship.title} deadline is approaching.`,
+        link: `/scholarship/${urgentMatches[0].scholarship.id}`,
+        linkText: 'View Opportunity',
+        priority: 'medium',
+      });
+    }
+
+    if (actions.length === 0) {
+      actions.push({
+        id: 'explore-more',
+        title: 'Explore & Compare Curated Opportunities',
+        subtitle: 'Browse 36 multi-factor matched scholarships across Central, State, and CSR sponsors.',
+        link: '/explore',
+        linkText: 'Explore Schemes',
+        priority: 'normal',
+      });
+    }
+
+    return actions;
+  }, [completeness, inProgressApps, expiringDocs, urgentMatches]);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Welcome Banner */}
@@ -288,7 +377,7 @@ export const DashboardPage: React.FC = () => {
             <p className="text-2xl font-display font-bold text-text">
               {activeApplicationsCount}
             </p>
-            <p className="text-xs text-muted mt-0.5">In progress & submitted</p>
+            <p className="text-xs text-muted mt-0.5">{inProgressApps.length} drafting • {submittedApps.length} submitted</p>
           </div>
         </Card>
 
@@ -318,6 +407,147 @@ export const DashboardPage: React.FC = () => {
           </div>
         </Card>
       </div>
+
+      {/* =======================================================================
+          QUESTION 5: WHAT SHOULD I DO NEXT? — Personalized Next Actions
+          ======================================================================= */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-display font-bold text-text flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-emerald-400" />
+            <span>Personalized Next Actions</span>
+          </h2>
+          <span className="text-xs text-muted">Prioritized by urgency & readiness</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {nextActions.map((action) => (
+            <Card
+              key={action.id}
+              className={`p-4 flex items-center justify-between gap-4 border ${
+                action.priority === 'high'
+                  ? 'border-primary/40 bg-primary/10'
+                  : 'border-border bg-surface'
+              }`}
+            >
+              <div className="space-y-0.5">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-primary block">
+                  {action.priority === 'high' ? 'High Priority' : 'Recommended'}
+                </span>
+                <h4 className="text-xs font-bold text-text">{action.title}</h4>
+                <p className="text-[11px] text-muted">{action.subtitle}</p>
+              </div>
+
+              <Link to={action.link} className="shrink-0">
+                <Button variant="outline" size="sm" className="text-xs">
+                  {action.linkText}
+                </Button>
+              </Link>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* =======================================================================
+          QUESTION 3: WHICH APPLICATIONS HAVE I STARTED?
+          ======================================================================= */}
+      {inProgressApps.length > 0 && (
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-display font-bold text-text flex items-center gap-2">
+              <CheckSquare className="w-5 h-5 text-primary" />
+              <span>Applications in Progress ({inProgressApps.length})</span>
+            </h2>
+            <Link to="/tracker" className="text-xs text-primary hover:underline">
+              View all in Tracker &rarr;
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {inProgressApps.map((app) => {
+              const compCount = app.steps.filter((s) => s.isCompleted).length;
+              const sch = MOCK_SCHOLARSHIPS.find((s) => s.id === app.scholarshipId);
+
+              return (
+                <Card key={app.scholarshipId} className="p-4 bg-surface space-y-3 border-border">
+                  <div className="flex items-center justify-between">
+                    <Badge variant={app.status === 'ready_to_apply' ? 'gold' : 'neutral'} size="sm">
+                      {app.status.replace(/_/g, ' ').toUpperCase()}
+                    </Badge>
+                    {sch && (
+                      <span className="text-[11px] text-gold-400 font-mono font-medium">
+                        {sch.deadlineDays}d left
+                      </span>
+                    )}
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-bold text-text line-clamp-1">{app.scholarshipTitle}</h3>
+                    <p className="text-xs text-muted mt-0.5">
+                      {compCount} of {app.steps.length} milestones complete
+                    </p>
+                  </div>
+
+                  <div className="w-full bg-surface-muted h-1.5 rounded-full overflow-hidden">
+                    <div
+                      className="bg-primary h-full rounded-full transition-all"
+                      style={{ width: `${(compCount / app.steps.length) * 100}%` }}
+                    />
+                  </div>
+
+                  <div className="pt-2 border-t border-border flex items-center justify-between text-xs">
+                    <span className="text-primary font-semibold font-display">
+                      {sch?.amountFormatted}
+                    </span>
+                    <Link to="/tracker">
+                      <Button variant="outline" size="sm">Resume</Button>
+                    </Link>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* =======================================================================
+          SAVED SCHOLARSHIPS QUICK ACCESS
+          ======================================================================= */}
+      {savedList.length > 0 && (
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-display font-bold text-text flex items-center gap-2">
+              <Bookmark className="w-5 h-5 text-gold-400" />
+              <span>Saved Opportunities ({savedList.length})</span>
+            </h2>
+            <Link to="/explore" className="text-xs text-primary hover:underline">
+              Explore catalog &rarr;
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            {savedList.slice(0, 3).map((sch) => (
+              <Card key={sch.id} className="p-3.5 bg-surface-elevated/40 border-border space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-display font-bold text-xs text-primary">{sch.amountFormatted}</span>
+                  <span className="text-[10px] text-gold-400 font-mono">{sch.deadlineDays}d left</span>
+                </div>
+                <h4 className="text-xs font-bold text-text line-clamp-1">
+                  <Link to={`/scholarship/${sch.id}`} className="hover:text-primary transition-colors">
+                    {sch.title}
+                  </Link>
+                </h4>
+                <div className="flex items-center justify-between pt-1 text-[11px] text-muted">
+                  <span className="truncate">{sch.provider}</span>
+                  <Link to={`/scholarship/${sch.id}`} className="text-primary hover:underline shrink-0">
+                    Details
+                  </Link>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Top 5 Algorithmic Recommendations */}
       <div className="space-y-4">

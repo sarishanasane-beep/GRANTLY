@@ -38,8 +38,10 @@ export type SocialCategory =
 export type ApplicationStatus =
   | 'saved'
   | 'drafting'
+  | 'ready_to_apply'
   | 'submitted'
   | 'under_review'
+  | 'approved'
   | 'awarded'
   | 'rejected'
   | 'archived';
@@ -52,6 +54,7 @@ export type DocumentType =
   | 'bonafide_letter'
   | 'id_proof'
   | 'bank_passbook'
+  | 'passport_photo'
   | 'recommendation_letter'
   | 'statement_of_purpose'
   | 'disability_certificate'
