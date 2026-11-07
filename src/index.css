@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* GRANTLY Permanent Brand Palette Tokens */
+    --grantly-black: #0B0F0D;
+    --grantly-dark: #1F2A1F;
+    --grantly-forest: #3E5A3F;
+    --grantly-sage: #8CA98C;
+    --grantly-champagne: #D9C7A3;
+    --grantly-gold: #B08D57;
+
+    /* Semantic System Tokens (RGB Triplets for Tailwind opacity modifier support) */
+    --background: 11 15 13;              /* #0B0F0D - Primary deep page background */
+    --surface: 31 42 31;                 /* #1F2A1F - Secondary surfaces / cards */
+    --surface-muted: 20 28 20;           /* #141C14 - Deeper secondary surface */
+    --surface-elevated: 45 62 46;        /* #2D3E2E - Elevated interactive surface */
+    --primary: 62 90 63;                 /* #3E5A3F - Secondary green accents / actions */
+    --primary-hover: 140 169 140;        /* #8CA98C - Supporting sage highlight */
+    --secondary: 217 199 163;            /* #D9C7A3 - Premium champagne highlights */
+    --secondary-hover: 176 141 87;       /* #B08D57 - Gold detailing */
+    --text: 245 247 245;                 /* #F5F7F5 - Clean readable off-white primary text */
+    --muted: 140 169 140;                /* #8CA98C - Supporting text and soft highlights */
+    --border: 38 52 39;                  /* #263427 - Subtle forest border */
+    --success: 62 90 63;
+    --warning: 217 199 163;
+    --danger: 220 80 80;
+  }
+
+  .dark {
+    --background: 11 15 13;              /* #0B0F0D */
+    --surface: 31 42 31;                 /* #1F2A1F */
+    --surface-muted: 20 28 20;           /* #141C14 */
+    --surface-elevated: 45 62 46;        /* #2D3E2E */
+    --primary: 62 90 63;                 /* #3E5A3F */
+    --primary-hover: 140 169 140;        /* #8CA98C */
+    --secondary: 217 199 163;            /* #D9C7A3 */
+    --secondary-hover: 176 141 87;       /* #B08D57 */
+    --text: 245 247 245;                 /* #F5F7F5 */
+    --muted: 140 169 140;                /* #8CA98C */
+    --border: 38 52 39;                  /* #263427 */
+    --success: 62 90 63;
+    --warning: 217 199 163;
+    --danger: 220 80 80;
+  }
+
+  /* Force dark theme for landing page marketing wrapper */
+  .landing-dark-theme {
+    --background: 11 15 13;
+    --surface: 31 42 31;
+    --surface-muted: 20 28 20;
+    --surface-elevated: 45 62 46;
+    --primary: 62 90 63;
+    --primary-hover: 140 169 140;
+    --secondary: 217 199 163;
+    --secondary-hover: 176 141 87;
+    --text: 245 247 245;
+    --muted: 140 169 140;
+    --border: 38 52 39;
+    --success: 62 90 63;
+    --warning: 217 199 163;
+    --danger: 220 80 80;
+    color-scheme: dark;
+  }
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0B0F0D;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(62, 90, 63, 0.4);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(140, 169, 140, 0.6);
+}
+
+/* Skip Link Accessibility */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 1rem;
+  z-index: 1000;
+  padding: 0.75rem 1.25rem;
+  background: #D9C7A3;
+  color: #0B0F0D;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  transition: top 0.2s ease-in-out;
+}
+
+.skip-link:focus {
+  top: 1rem;
+  outline: 2px solid #B08D57;
+  outline-offset: 2px;
+}
+
+/* Glassmorphism utility helpers */
+.glass-panel {
+  background: rgba(13, 34, 27, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+.glass-panel-light {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 236, 231, 0.8);
+}
